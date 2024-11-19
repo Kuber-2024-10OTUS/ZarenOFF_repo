@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: homework
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+        maxSurge: 2
+        maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: homework
+                operator: In
+                values:
+                - "true"
+      volumes:
+      - name: html
+        emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: nginx-config
+      containers:
+      - name: nginx
+        image: nginx:latest
+        volumeMounts:
+        - mountPath: /homework
+          name: html
+        - mountPath: /etc/nginx/conf.d
+          name: config-volume
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "rm -f /homework/index.html"]
+        ports:
+          - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /index.html
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      initContainers:
+        - name: init-busybox
+          image: busybox:1.28
+          command: ['wget', '-O', '/init/index.html', 'https://google.com']
+          volumeMounts:
+          - mountPath: /init
+            name: html
