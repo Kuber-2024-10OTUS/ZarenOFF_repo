@@ -1,0 +1,29 @@
+image:
+  repository: nginx
+  tag: "1.27.3"
+
+initContainer:
+  name: init-alpine-curl
+  image: alpine/curl
+  tag: "8.10.0"
+  ip: "172.27.226.116"
+
+replicaCount: 3
+
+service:
+  port: 8000
+
+readinessProbe:
+  enabled: true
+
+ingress:
+  host: homework.otus
+  enabled: true
+
+mysql:
+  enabled: true
+  rootPassword: password123
+
+persistentVolume:
+  storageClass: kubia-storageclass
+  size: 1Gi

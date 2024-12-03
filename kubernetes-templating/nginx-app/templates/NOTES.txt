@@ -1,0 +1,4 @@
+{{- if .Values.ingress.enabled }}
+1. Для доступа к вашему приложению используйте следующий URL:
+http://{{ .Values.ingress.host }}/
+{{- end }}

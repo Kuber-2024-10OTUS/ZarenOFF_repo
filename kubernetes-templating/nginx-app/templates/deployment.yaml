@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nginx-app.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "nginx-app.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "nginx-app.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "nginx-app.name" . }}
+    spec:
+      serviceAccountName: monitoring
+      volumes:
+        - name: html
+          persistentVolumeClaim:
+            claimName: {{ include "nginx-app.fullname" . }}-pvc
+        - name: config-volume
+          configMap:
+            name: {{ include "nginx-app.fullname" . }}-config
+        - name: data-volume
+          configMap:
+            name: {{ include "nginx-app.fullname" . }}-data
+      initContainers:
+        - name: "{{ .Values.initContainer.name }}"
+          image: "{{ .Values.initContainer.image }}:{{ .Values.initContainer.tag }}"
+          command: ['sh', '-c', 'curl -L -o /init/index.html https://google.com && curl -k -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" https://{{ .Values.initContainer.ip }}:10250/metrics -o /init/metrics.html']
+          volumeMounts:
+            - mountPath: /init
+              name: html
+      containers:
+        - name: {{ include "nginx-app.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          volumeMounts:
+            - mountPath: /homework
+              name: html
+            - mountPath: /etc/nginx/conf.d
+              name: config-volume
+            - mountPath: /homework/conf
+              name: data-volume
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          readinessProbe:
+            {{- if .Values.readinessProbe.enabled }}
+            httpGet:
+              path: /index.html
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            {{- end }}
