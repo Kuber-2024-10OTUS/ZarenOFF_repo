@@ -1,0 +1,40 @@
+releases:
+  - name: custom-kafka-prod
+    chart: oci://registry-1.docker.io/bitnamicharts/kafka
+    namespace: prod
+    values:
+      - controller:
+          replicaCount: 5
+        image:
+          tag: "3.5.2"
+        auth:
+          enabled: true
+          sasl:
+            enabled: true
+            mechanism: PLAIN
+        externalAccess:
+          enabled: false
+        service:
+          type: ClusterIP
+        readinessProbe:
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+  - name: custom-kafka-dev
+    chart: oci://registry-1.docker.io/bitnamicharts/kafka
+    namespace: dev
+    values:
+      - controller:
+          replicaCount: 1
+        image:
+          tag: latest
+        auth:
+          enabled: false
+        externalAccess:
+          enabled: false
+        service:
+          type: ClusterIP
