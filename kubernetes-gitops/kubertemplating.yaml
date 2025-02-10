@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubernetes-templating
+  namespace: argocd
+spec:
+  project: otus
+  source:
+    repoURL: https://github.com/Kuber-2024-10OTUS/ZarenOFF_repo.git
+    targetRevision: HEAD
+    path: kubernetes-templating/nginx-app
+    helm:
+      releaseName: nginx-app
+      valueFiles:
+        - ./values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: templating
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - ApplyOutOfSyncOnly=true
+    - CreateNamespace=true

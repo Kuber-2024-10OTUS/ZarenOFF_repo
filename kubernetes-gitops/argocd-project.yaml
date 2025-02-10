@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: otus
+  namespace: argocd
+spec:
+  description: Otus Project gitops
+  sourceRepos:
+  - 'https://github.com/Kuber-2024-10OTUS/ZarenOFF_repo.git'
+  destinations:
+  - namespace: '*'
+    server: https://kubernetes.default.svc
+    name: in-cluster
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
