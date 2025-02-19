@@ -1,0 +1,12 @@
+global:
+  name: consul
+
+server:
+  replicas: 3
+  bootstrapExpect: 3
+
+ui:
+  enabled: true
+
+syncCatalog:
+  enabled: true

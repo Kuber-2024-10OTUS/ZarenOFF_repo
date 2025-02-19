@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-auth
+  namespace: vault
+automountServiceAccountToken: true
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-auth-secret
+  namespace: vault
+  annotations:
+    kubernetes.io/service-account.name: vault-auth
+type: kubernetes.io/service-account-token
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-auth
+  namespace: vault
+subjects:
+- kind: ServiceAccount
+  name: vault-auth
+  namespace: vault
+roleRef:
+  kind: ClusterRole
+  name: system:auth-delegator
+  apiGroup: rbac.authorization.k8s.io
